@@ -20,6 +20,6 @@ public func configure(_ app: Application) throws {
     // Attempt to migrate
     try app.autoMigrate().wait()
 
-    // register routes
+    // Register routes
     try routes(app)
 }
