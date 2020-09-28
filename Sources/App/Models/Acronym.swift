@@ -14,12 +14,19 @@ final class Acronym: Model {
     @Field(key: "long")
     var long: String
     
+    @Parent(key: "userId")
+    var user: User
+    
     init() {}
     
-    init(id: UUID? = nil, short: String, long: String) {
+    init(id: UUID? = nil,
+         short: String,
+         long: String,
+         userId: User.IDValue) {
         self.id = id
         self.short = short
         self.long = long
+        self.$user.id = userId
     }
 }
 

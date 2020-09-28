@@ -11,8 +11,9 @@ public func configure(_ app: Application) throws {
         database: Environment.get("DATABASE_NAME") ?? "vapor_database"
     ), as: .psql)
     
-    // Add migration
+    // Add migrations
     app.migrations.add(CreateAcronym())
+    app.migrations.add(CreateUser())
     
     // Set log level
     app.logger.logLevel = .debug

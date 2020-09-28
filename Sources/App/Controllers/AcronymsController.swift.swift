@@ -1,17 +1,9 @@
-//
-//  AcronymsController.swift.swift
-//  
-//
-//  Created by Samuel Yanez on 9/27/20.
-//
-
 import Fluent
 import Vapor
 
 struct AcronymsController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
-        
         // Create route group.
         let acronymsRoutes = routes.grouped("api", "acronyms")
         
@@ -29,7 +21,12 @@ struct AcronymsController: RouteCollection {
     // MARK: - Handlers
     
     func createHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
-        let acronym = try req.content.decode(Acronym.self)
+        let data = try req.content.decode(CreateAcronymData.self)
+        ler acronym = Acronym(
+            short: data.short,
+            long: data.long,
+            userId: data.userId
+        )
         return acronym.save(on: req.db).map { acronym }
     }
     
@@ -85,5 +82,11 @@ struct AcronymsController: RouteCollection {
         Acronym.query(on: req.db)
             .sort(\.$short, .ascending)
             .all()
+    }
+    
+    struct CreateAcronymData: Content {
+        let short: String
+        let long: String
+        let userId: UUID
     }
 }
