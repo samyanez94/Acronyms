@@ -11,11 +11,11 @@ import Vapor
 
 func routes(_ app: Application) throws {
     
-    // Create controllers.
-    let acronymsController = AcronymsController()
+    // Create controllers
     let usersController = UsersController()
+    let acronymsController = AcronymsController()
     
-    // Register users controller.
-    try app.register(collection: acronymsController)
+    // Register controller
     try app.register(collection: usersController)
+    try app.register(collection: acronymsController)
 }

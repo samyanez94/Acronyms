@@ -17,20 +17,21 @@ struct AcronymsController: RouteCollection {
         
         // Register routes.
         acronymsRoutes.post(use: createHandler)
-        acronymsRoutes.get(":id", use: getHandler)
+        acronymsRoutes.get(":acronymId", use: getHandler)
         acronymsRoutes.get(use: getAllHandler)
-        acronymsRoutes.put(":id", use: updateHandler)
-        acronymsRoutes.delete(":id", use: deleteHandler)
+        acronymsRoutes.put(":acronymId", use: updateHandler)
+        acronymsRoutes.delete(":acronymId", use: deleteHandler)
         acronymsRoutes.get("search", use: searchHandler)
         acronymsRoutes.get("first", use: getFirstHandler)
         acronymsRoutes.get("sorted", use: sortedHandler)
+        acronymsRoutes.get(":acronymId", "user", use: getUserHandler)
     }
     
     // MARK: - Handlers
     
     func createHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
         let data = try req.content.decode(CreateAcronymData.self)
-        ler acronym = Acronym(
+        let acronym = Acronym(
             short: data.short,
             long: data.long,
             userId: data.userId
@@ -39,7 +40,7 @@ struct AcronymsController: RouteCollection {
     }
     
     func getHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
-        Acronym.find(req.parameters.get("id"), on: req.db)
+        Acronym.find(req.parameters.get("acronymId"), on: req.db)
             .unwrap(or: Abort(.notFound))
     }
     
@@ -49,7 +50,7 @@ struct AcronymsController: RouteCollection {
     
     func updateHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
         let updatedAcronym = try req.content.decode(Acronym.self)
-        return Acronym.find(req.parameters.get("id"), on: req.db)
+        return Acronym.find(req.parameters.get("acronymId"), on: req.db)
             .unwrap(or: Abort(.notFound))
             .flatMap { acronym in
                 acronym.short = updatedAcronym.short
@@ -60,7 +61,7 @@ struct AcronymsController: RouteCollection {
     }
     
     func deleteHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
-        Acronym.find(req.parameters.get("id"), on: req.db)
+        Acronym.find(req.parameters.get("acronymId"), on: req.db)
             .unwrap(or: Abort(.notFound))
             .flatMap { acronym in
                 acronym.delete(on: req.db)
@@ -91,6 +92,15 @@ struct AcronymsController: RouteCollection {
             .sort(\.$short, .ascending)
             .all()
     }
+    
+    func getUserHandler(_ req: Request) throws -> EventLoopFuture<User> {
+        Acronym.find(req.parameters.get("acronymId"), on: req.db)
+            .unwrap(or: Abort(.notFound)).flatMap { acronym in
+                acronym.$user.get(on: req.db)
+            }
+    }
+    
+    // MARK: - Domain Transfer Objects
     
     struct CreateAcronymData: Content {
         let short: String

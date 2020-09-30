@@ -20,8 +20,8 @@ public func configure(_ app: Application) throws {
     ), as: .psql)
     
     // Add migrations
-    app.migrations.add(CreateAcronym())
     app.migrations.add(CreateUser())
+    app.migrations.add(CreateAcronym())
     
     // Set log level
     app.logger.logLevel = .debug
