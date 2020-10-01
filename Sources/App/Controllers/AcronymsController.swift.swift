@@ -12,10 +12,10 @@ import Vapor
 struct AcronymsController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
-        // Create route group.
+        // Create route group
         let acronymsRoutes = routes.grouped("api", "acronyms")
         
-        // Register routes.
+        // Register routes
         acronymsRoutes.post(use: createHandler)
         acronymsRoutes.get(":acronymId", use: getHandler)
         acronymsRoutes.get(use: getAllHandler)
@@ -25,6 +25,9 @@ struct AcronymsController: RouteCollection {
         acronymsRoutes.get("first", use: getFirstHandler)
         acronymsRoutes.get("sorted", use: sortedHandler)
         acronymsRoutes.get(":acronymId", "user", use: getUserHandler)
+        acronymsRoutes.post(":acronymId", "categories", ":categoryId", use: addCategoriesHandler)
+        acronymsRoutes.get(":acronymId", "categories", use: getCategoriesHandler)
+        acronymsRoutes.delete(":acronymId", "categories", use: removeCategoriesHandler)
     }
     
     // MARK: - Handlers
@@ -95,8 +98,44 @@ struct AcronymsController: RouteCollection {
     
     func getUserHandler(_ req: Request) throws -> EventLoopFuture<User> {
         Acronym.find(req.parameters.get("acronymId"), on: req.db)
-            .unwrap(or: Abort(.notFound)).flatMap { acronym in
+            .unwrap(or: Abort(.notFound))
+            .flatMap { acronym in
                 acronym.$user.get(on: req.db)
+            }
+    }
+    
+    func addCategoriesHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+        print("Yeet")
+        let acronymQuery = Acronym.find(req.parameters.get("acronymId"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+        let categoryQuery = Category.find(req.parameters.get("categoryId"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+        return acronymQuery.and(categoryQuery)
+            .flatMap { acronym, category in
+                acronym.$categories
+                    .attach(category, on: req.db)
+                    .transform(to: .created)
+            }
+    }
+    
+    func getCategoriesHandler(_ req: Request) throws -> EventLoopFuture<[Category]> {
+        Acronym.find(req.parameters.get("acronymId"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { acronym in
+                acronym.$categories.get(on: req.db)
+            }
+    }
+    
+    func removeCategoriesHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+        let acronymQuery = Acronym.find(req.parameters.get("acronymId"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+        let categoryQuery = Category.find(req.parameters.get("categoryId"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+        return acronymQuery.and(categoryQuery)
+            .flatMap { acronym, category in
+                acronym.$categories
+                    .detach(category, on: req.db)
+                    .transform(to: .noContent)
             }
     }
     

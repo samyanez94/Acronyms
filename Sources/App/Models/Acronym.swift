@@ -9,7 +9,7 @@
 import Fluent
 import Vapor
 
-final class Acronym: Model {
+final class Acronym: Model, Content {
     
     static let schema = "acronyms"
     
@@ -25,6 +25,9 @@ final class Acronym: Model {
     @Parent(key: "userId")
     var user: User
     
+    @Siblings(through: AcronymCategoryPivot.self, from: \.$acronym,to: \.$category)
+    var categories: [Category]
+    
     init() {}
     
     init(id: UUID? = nil,
@@ -37,5 +40,3 @@ final class Acronym: Model {
         self.$user.id = userId
     }
 }
-
-extension Acronym: Content {}
