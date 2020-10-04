@@ -6,7 +6,6 @@
 //  Copyright © 2020 Samuel Yanez. All rights reserved.
 //
 
-
 import Fluent
 
 struct CreateAcronymCategoryPivot: Migration {
