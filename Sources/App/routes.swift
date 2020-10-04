@@ -10,12 +10,11 @@ import Fluent
 import Vapor
 
 func routes(_ app: Application) throws {
-    
     // Create controllers
     let usersController = UsersController()
     let categoriesController = CategoriesController()
     let acronymsController = AcronymsController()
-    
+
     // Register controller
     try app.register(collection: usersController)
     try app.register(collection: categoriesController)

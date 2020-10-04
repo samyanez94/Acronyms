@@ -10,11 +10,10 @@ import Fluent
 import Vapor
 
 struct AcronymsController: RouteCollection {
-    
     func boot(routes: RoutesBuilder) throws {
         // Create route group
         let acronymsRoutes = routes.grouped("api", "acronyms")
-        
+
         // Register routes
         acronymsRoutes.post(use: createHandler)
         acronymsRoutes.get(":acronymId", use: getHandler)
@@ -29,9 +28,9 @@ struct AcronymsController: RouteCollection {
         acronymsRoutes.get(":acronymId", "categories", use: getCategoriesHandler)
         acronymsRoutes.delete(":acronymId", "categories", use: removeCategoriesHandler)
     }
-    
+
     // MARK: - Handlers
-    
+
     func createHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
         let data = try req.content.decode(CreateAcronymData.self)
         let acronym = Acronym(
@@ -41,16 +40,16 @@ struct AcronymsController: RouteCollection {
         )
         return acronym.save(on: req.db).map { acronym }
     }
-    
+
     func getHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
         Acronym.find(req.parameters.get("acronymId"), on: req.db)
             .unwrap(or: Abort(.notFound))
     }
-    
+
     func getAllHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
         Acronym.query(on: req.db).all()
     }
-    
+
     func updateHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
         let updatedAcronym = try req.content.decode(Acronym.self)
         return Acronym.find(req.parameters.get("acronymId"), on: req.db)
@@ -62,7 +61,7 @@ struct AcronymsController: RouteCollection {
                     .map { acronym }
             }
     }
-    
+
     func deleteHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
         Acronym.find(req.parameters.get("acronymId"), on: req.db)
             .unwrap(or: Abort(.notFound))
@@ -71,7 +70,7 @@ struct AcronymsController: RouteCollection {
                     .transform(to: .noContent)
             }
     }
-    
+
     func searchHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
         guard let searchTerm = req.query[String.self, at: "term"] else {
             throw Abort(.badRequest)
@@ -83,19 +82,19 @@ struct AcronymsController: RouteCollection {
             }
             .all()
     }
-    
+
     func getFirstHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
         Acronym.query(on: req.db)
             .first()
             .unwrap(or: Abort(.notFound))
     }
-    
+
     func sortedHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
         Acronym.query(on: req.db)
             .sort(\.$short, .ascending)
             .all()
     }
-    
+
     func getUserHandler(_ req: Request) throws -> EventLoopFuture<User> {
         Acronym.find(req.parameters.get("acronymId"), on: req.db)
             .unwrap(or: Abort(.notFound))
@@ -103,7 +102,7 @@ struct AcronymsController: RouteCollection {
                 acronym.$user.get(on: req.db)
             }
     }
-    
+
     func addCategoriesHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
         print("Yeet")
         let acronymQuery = Acronym.find(req.parameters.get("acronymId"), on: req.db)
@@ -117,7 +116,7 @@ struct AcronymsController: RouteCollection {
                     .transform(to: .created)
             }
     }
-    
+
     func getCategoriesHandler(_ req: Request) throws -> EventLoopFuture<[Category]> {
         Acronym.find(req.parameters.get("acronymId"), on: req.db)
             .unwrap(or: Abort(.notFound))
@@ -125,7 +124,7 @@ struct AcronymsController: RouteCollection {
                 acronym.$categories.get(on: req.db)
             }
     }
-    
+
     func removeCategoriesHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
         let acronymQuery = Acronym.find(req.parameters.get("acronymId"), on: req.db)
             .unwrap(or: Abort(.notFound))
@@ -138,9 +137,9 @@ struct AcronymsController: RouteCollection {
                     .transform(to: .noContent)
             }
     }
-    
+
     // MARK: - Domain Transfer Objects
-    
+
     struct CreateAcronymData: Content {
         let short: String
         let long: String

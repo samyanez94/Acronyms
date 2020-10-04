@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "Acronyms",
     platforms: [
-       .macOS(.v10_15)
+        .macOS(.v10_15)
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
